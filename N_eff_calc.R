@@ -48,21 +48,21 @@ N.eff.fun<-function(ind, mod, warmup){
   N<-length(as.vector(unlist(mod@sim$sample[[1]][1]))[-c(1:warmup)])
   while(sum(rho[(length(rho)-1):length(rho)])>0) {
     i<-i+1
-    rho<-c(rho, stan.get.rho(mod,ind,i))}
+    rho<-c(rho, stan.get.rho(mod,ind,i, warmup))}
   out<-(M*N)/(1+2*sum(rho[-c(1:2,(length(rho)-1):length(rho))]))
   out
 }
 
 #This is the version in the Stan manual
 #Stop calculating autocorrelation when you get a negative autocorrelation:
-N.eff.fun2<-function(ind, mod){
+N.eff.fun2<-function(ind, mod, warmup){
   rho<-1
   i<-0
   M<-3
   N<-length(as.vector(unlist(mod@sim$sample[[1]][1]))[-c(1:warmup)])
   while(rho[length(rho)]>0){
     i<-i+1
-    rho<-c(rho, stan.get.rho(mod,ind,i))}
+    rho<-c(rho, stan.get.rho(mod,ind,i, warmup))}
   if(length(rho)>2){out<-(M*N)/(1+2*sum(rho[-c(1,length(rho))]))}
   if(length(rho)==2){out<-(M*N)/sum(rho[-length(rho)])}
   out
@@ -71,15 +71,15 @@ N.eff.fun2<-function(ind, mod){
 
 #This is the output for the n_eff method described in BDA:
 n.eff<-numeric()
-for(j in 1:length(summary(MOD)$summary[,1])){n.eff[j]<-N.eff.fun(j, MOD)}
+for(j in 1:length(summary(MOD)$summary[,1])){n.eff[j]<-N.eff.fun(j, MOD, warmup)}
 o<-match(names(MOD@sim$sample[[1]]),row.names(summary(MOD)$summary))
 out<-cbind(round(n.eff),round(summary(MOD)$summary[o,9]))
-summary(out[,2]-out[,1])
+
 
 
 #This is the output for the n_eff method described in Stan manual:
 n.eff_Stan<-numeric()
-for(j in 1:length(summary(MOD)$summary[,1])){n.eff_Stan[j]<-N.eff.fun2(j, MOD)}
+for(j in 1:length(summary(MOD)$summary[,1])){n.eff_Stan[j]<-N.eff.fun2(j, MOD,warmup)}
 o<-match(names(MOD@sim$sample[[1]]),row.names(summary(MOD)$summary))
 out<-cbind(round(n.eff_Stan),round(summary(MOD)$summary[o,9]))
-summary(out[,2]-out[,1])
+
