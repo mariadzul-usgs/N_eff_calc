@@ -1,4 +1,5 @@
 
+
 #mod = stan model output
 #ind = index for parameter
 #lag = lag for autocorrelation:
@@ -58,7 +59,7 @@ N.eff.fun2<-function(ind, mod){
   rho<-1
   i<-0
   M<-3
-  N<-length(as.vector(unlist(mod@sim$sample[[1]][1]))[-c(1:300)])
+  N<-length(as.vector(unlist(mod@sim$sample[[1]][1]))[-c(1:warmup)])
   while(rho[length(rho)]>0){
     i<-i+1
     rho<-c(rho, stan.get.rho(mod,ind,i))}
@@ -68,9 +69,17 @@ N.eff.fun2<-function(ind, mod){
 }
 
 
-
+#This is the output for the n_eff method described in BDA:
 n.eff<-numeric()
-for(j in 1:24){n.eff[j]<-N.eff.fun(j, MOD)}
-o<-match(names(SM@sim$sample[[1]]),row.names(summary(MOD)$summary))
+for(j in 1:length(summary(MOD)$summary[,1])){n.eff[j]<-N.eff.fun(j, MOD)}
+o<-match(names(MOD@sim$sample[[1]]),row.names(summary(MOD)$summary))
 out<-cbind(round(n.eff),round(summary(MOD)$summary[o,9]))
+summary(out[,2]-out[,1])
+
+
+#This is the output for the n_eff method described in Stan manual:
+n.eff_Stan<-numeric()
+for(j in 1:length(summary(MOD)$summary[,1])){n.eff_Stan[j]<-N.eff.fun2(j, MOD)}
+o<-match(names(MOD@sim$sample[[1]]),row.names(summary(MOD)$summary))
+out<-cbind(round(n.eff_Stan),round(summary(MOD)$summary[o,9]))
 summary(out[,2]-out[,1])
